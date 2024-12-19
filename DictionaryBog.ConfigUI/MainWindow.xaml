@@ -1,0 +1,203 @@
+﻿<Window x:Class="DictionaryBot.ConfigUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DictionaryBot.ConfigUI"
+        mc:Ignorable="d"
+        Title="Arya's Dictionary Bot Config" MinHeight="450" MinWidth="600" Height="600" Width="900"
+        Background="{StaticResource Bg1}"
+        Foreground="{StaticResource Text}">
+    <Window.DataContext>
+        <local:MainWindowContext/>
+    </Window.DataContext>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
+    </Window.Resources>
+    <Grid>
+        <!-- Main Content -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <!-- Service Controls -->
+            <DockPanel Grid.Row="0" 
+                        Background="{StaticResource Bg3}"
+                        Margin="0 0 0 10">
+                <Border DockPanel.Dock="Right"
+                        Name="ServiceControlButtonBg"
+                        Background="{StaticResource Bg1}"
+                        BorderThickness="0" 
+                        CornerRadius="2"
+                        VerticalAlignment="Center"
+                        Height="25"
+                        Margin="10 0"
+                        IsEnabled="False">
+                    <TextBlock MaxWidth="150" 
+                               TextAlignment="Center" 
+                               VerticalAlignment="Center" 
+                               Margin="10 3"
+                               FontSize="14">
+                        <Hyperlink Foreground="{StaticResource Text}"
+                                   TextDecorations=""
+                                   Click="ServiceControl">
+                            <TextBlock Name="ServiceControlButton" Text="Unknown"/>
+                        </Hyperlink>
+                    </TextBlock>
+                </Border>
+                <TextBlock DockPanel.Dock="Left" FontSize="18" Margin="10 5">
+                    <Run>Service Status:</Run>
+                    <Run Name="ServiceStatus" Foreground="{StaticResource Text2}">
+                        Unknown
+                    </Run>
+                </TextBlock>
+                <TextBlock Name="Notification"
+                           Margin="5 0"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           FontSize="16"/>
+            </DockPanel>
+            <!-- Avatar Image -->
+            <StackPanel Grid.Row="1" Margin="5 0">
+                <Border BorderBrush="{StaticResource Accent}"
+                        BorderThickness="1"
+                        CornerRadius="64" Width="128"
+                        Height="128">
+                    <Border.Background>
+                        <ImageBrush x:Name="Avatar" Stretch="UniformToFill" ImageSource="{StaticResource DefaultAvatar}" />
+                    </Border.Background>
+                </Border>
+                <TextBlock HorizontalAlignment="Center" FontSize="18">
+                    <Run Name="BotNameDisplay" Text="No Bot Found"/>
+                </TextBlock>
+            </StackPanel>
+            <!-- Bot Token Input -->
+            <StackPanel Grid.Row="2" Name="DiscordTokenRow" VerticalAlignment="Stretch" Margin="10 5" IsEnabled="False">
+                <TextBlock FontSize="18" Margin="4 0 0 0">
+                    <Run>Bot Token - </Run>
+                    <Hyperlink local:HyperlinkUtility.LaunchDefaultBrowser="True"
+                               NavigateUri="https://discordgsm.com/guide/how-to-get-a-discord-bot-token">
+                        How to get a bot token.
+                    </Hyperlink>
+                </TextBlock>
+                <DockPanel>
+                    <Border DockPanel.Dock="Right" 
+                            Background="{StaticResource Primary}"
+                            BorderThickness="0" 
+                            CornerRadius="2" 
+                            Width="90"
+                            Height="25"
+                            Margin="10 5 0 5">
+                        <TextBlock MaxWidth="150" 
+                                   TextAlignment="Center" 
+                                   VerticalAlignment="Center" 
+                                   Margin="3"
+                                   FontSize="14">
+                            <Hyperlink Foreground="{StaticResource Text}"
+                                       TextDecorations=""
+                                       Click="UpdateBotToken">
+                                Save Token
+                            </Hyperlink>
+                        </TextBlock>
+                    </Border>
+                    <Border BorderBrush="{StaticResource Accent}" 
+                            BorderThickness="1" 
+                            CornerRadius="2" 
+                            Background="{StaticResource Bg2}">
+                        <TextBox Name="DiscordToken" 
+                                 MaxLength="100" 
+                                 FontSize="18"
+                                 TextWrapping="NoWrap"
+                                 VerticalContentAlignment="Center"
+                                 MaxLines="1" 
+                                 Background="Transparent" 
+                                 BorderThickness="0"/>
+                    </Border>
+                </DockPanel>
+            </StackPanel>
+            <!-- Guild Selection -->
+            <StackPanel Grid.Row="3" Name="ServerRow" VerticalAlignment="Stretch" Margin="10 5" IsEnabled="False">
+                <TextBlock FontSize="18" Margin="4 0 0 0">
+                    <Run>Server - Don't see your server? Invite with</Run>
+                    <Hyperlink local:HyperlinkUtility.LaunchDefaultBrowser="True"
+                               NavigateUri="{Binding InviteLink}">
+                        this link
+                    </Hyperlink>
+                    <Run>then </Run>
+                    <Hyperlink Click="BotGuildsRefresh">
+                        here
+                    </Hyperlink>
+                    <Run>to refresh.</Run>
+                </TextBlock>
+                <DockPanel>
+                    <Border DockPanel.Dock="Right" 
+                            Background="{StaticResource Primary}"
+                            BorderThickness="0" 
+                            CornerRadius="2" 
+                            Width="100"
+                            Height="25"
+                            Margin="10 5 0 5">
+                        <TextBlock MaxWidth="150" 
+                                   TextAlignment="Center" 
+                                   VerticalAlignment="Center" 
+                                   Margin="3"
+                                   FontSize="14">
+                            <Hyperlink Foreground="{StaticResource Text}"
+                                       TextDecorations=""
+                                       Click="UpdateBotGuild">
+                                Select Server
+                            </Hyperlink>
+                        </TextBlock>
+                    </Border>
+                    <ComboBox SelectedItem="{Binding SelectedGuildItem}"
+                              ItemsSource="{Binding Guilds}"
+                              Style="{StaticResource ComboBoxTest2}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border BorderBrush="{StaticResource Accent}"
+                                            BorderThickness="1"
+                                            CornerRadius="100"
+                                            Width="30"
+                                            Height="30">
+                                        <Border.Background>
+                                            <ImageBrush Stretch="UniformToFill" ImageSource="{Binding Image}"/>
+                                        </Border.Background>
+                                    </Border>
+                                    <TextBlock Text="{Binding Name}"
+                                               Foreground="{StaticResource Text}"
+                                               FontSize="18"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"
+                                               Margin="5 0 0 0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </DockPanel>
+            </StackPanel>
+            <!-- Footer -->
+            <DockPanel Grid.Row="4">
+                <TextBlock HorizontalAlignment="Center"
+                           Foreground="{StaticResource Accent2}"
+                           Opacity="0.5">
+                    <Run>© 2024 AryaDev</Run>
+                </TextBlock>
+            </DockPanel>
+        </Grid>
+        <!-- Loading Overlay -->
+        <Border Visibility="{Binding IsLoading, Converter={StaticResource VisibilityConverter}}"
+                Background="{StaticResource Accent}"
+                Opacity="0.9">
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="24">
+                Loading...
+            </TextBlock>
+        </Border>
+    </Grid>
+</Window>

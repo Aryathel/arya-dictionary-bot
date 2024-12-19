@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<?define Name = "AryaDev - DictionaryBot" ?>
+<?define Manufacturer = "AryaDev" ?>
+<?define Version = "1.0.0.0" ?>
+<?define UpgradeCode = "c49fa0ee-01cf-4666-859f-b0d1356c5a07" ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+	<Package Name="$(Name)"
+			 Manufacturer="$(Manufacturer)"
+			 Version="$(Version)"
+			 UpgradeCode="$(UpgradeCode)"
+			 Compressed="true">
+		
+		<!-- Deny downgrades -->
+		<MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."/>
+		
+		<!-- Directory Structure -->
+		<StandardDirectory Id="ProgramFiles64Folder">
+			<!-- Create root folder -->
+			<Directory Id="ROOTDIRECTORY" Name="$(var.Manufacturer)">
+				<!-- Install Folder -->
+				<Directory Id="INSTALLFOLDER" Name="$(Name)">
+					<Directory Id="RESOURCEFOLDER" Name="Resources">
+						<Directory Id="IMAGESFOLDER" Name="Images"/>
+					</Directory>
+				</Directory>
+			</Directory>
+		</StandardDirectory>
+		<!-- Shortcut Folder -->
+		<StandardDirectory Id="ProgramMenuFolder">
+			<Directory Id="SHORTCUTFOLDER" Name="$(Name)"/>
+		</StandardDirectory>
+		
+		<!-- Attach files to their directories -->
+		<DirectoryRef Id="INSTALLFOLDER">
+			<Component Id="ServiceExecutable" Bitness="always64" Guid="9a958a17-e1d5-489f-86d1-b633b8f4c3fe">
+				<!-- Copy the exe -->
+				<File Id="DictionaryBot.WindowsService.exe"
+					  Source="$(var.DictionaryBot.WindowsService.TargetDir)publish\DictionaryBot.WindowsService.exe"
+					  KeyPath="true" />
+				
+				<!-- Remove all files on uninstall -->
+				<!--<RemoveFile Id="ALLFILES" Name="*.*" On="both" Directory="INSTALLFOLDER" />-->
+				<RemoveFolder Id="DeleteInstallFolder" On="both" Directory="INSTALLFOLDER"/>
+				
+				<!-- Tell WiX to install the service -->
+				<ServiceInstall Id="ServiceInstaller"
+								Type="ownProcess"
+								Name="DictionaryBot.WindowsService"
+								DisplayName="$(Name)"
+								Description="A Discord bot for dictionary interaction."
+								Start="auto"
+								ErrorControl="normal"
+								Vital="true">
+					<ServiceConfig DelayedAutoStart="yes" OnInstall="yes" OnReinstall="yes"/>
+				</ServiceInstall>
+				
+				<!-- Tell WiX to uninstall on removal the service -->
+				<ServiceControl Id="StopService"
+								Stop="both"
+								Remove="uninstall"
+								Name="DictionaryBot.WindowsService"
+								Wait="true" />
+			</Component>
+			<Component Id="ConfigUI" Bitness="always64" Guid="d3b2f2b0-30be-463a-952f-71f5499b4886">
+				<!-- Copy exe -->
+				<File Id="DictionaryBot.ConfigUI.exe"
+					  Source="$(var.DictionaryBot.ConfigUI.TargetDir)win-x64\publish\DictionaryBot.ConfigUI.exe"
+					  KeyPath="true"/>
+			</Component>
+		</DirectoryRef>
+		<DirectoryRef Id="IMAGESFOLDER">
+			<Component Id="ConfigUIImages" Guid="f03cd9da-99a7-46e5-8ab9-c966a5376c98">
+				<File Id="ConfigUIResourceImages" Source="$(var.DictionaryBot.ConfigUI.TargetDir)win-x64\publish\Resources\Images\AryathelLogo.png"/>
+			</Component>
+		</DirectoryRef>
+		
+		<!-- Start Menu Shortcut -->
+		<DirectoryRef Id="SHORTCUTFOLDER">
+			<Component Id="StartMenuShortcut" Guid="a134baeb-4987-4b04-831a-eba6dfeb48b7">
+				<Shortcut Id="STARTMENUSHORTCUT" 
+						  Name="$(Name)" 
+						  Description="Configuration UI for Arya's Dictionary Bot" 
+						  Target="[#DictionaryBot.ConfigUI.exe]"
+						  WorkingDirectory="INSTALLFOLDER"/>
+				<RemoveFolder Id="DeleteShortcutFolder" Directory="SHORTCUTFOLDER" On="uninstall"/>
+				<RegistryValue Root="HKCU" Key="Software\$(Manufacturer)\$(Name)" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
+		
+		<!-- Desktop Shortcut -->
+		<DirectoryRef Id="DesktopFolder">
+			<Component Id="DesktopShortcut" Guid="a0842b95-5dc9-40ed-9e7e-dc7acb58fed0">
+				<Shortcut Id="DESKTOPSHORTCUT" 
+						  Name="$(Name)" 
+						  Description="Configuration UI for Arya's Dictionary Bot"
+						  Target="[#DictionaryBot.ConfigUI.exe]"
+						  WorkingDirectory="INSTALLFOLDER"/>
+				<RegistryValue Root="HKCU" Key="Software\$(Manufacturer)\$(Name)" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
+		
+		<!-- Tell WiX to install the files -->
+		<Feature Id="Service" Title="DictionaryBot Setup" Level="1">
+			<ComponentRef Id="ServiceExecutable" />
+			<ComponentRef Id="ConfigUI" />
+			<ComponentRef Id="ConfigUIImages"/>
+			<ComponentRef Id="StartMenuShortcut"/>
+			<ComponentRef Id="DesktopShortcut"/>
+		</Feature>
+	</Package>
+</Wix>
